@@ -50,9 +50,10 @@ class LFCPublisher:
         """Function that generates the header file content"""
         output = self.generate_info(options)
 
-        output += '#pragma once\n\n'
+        output += f'#ifndef {options.name.upper()}_H\n'
+        output += f'#define {options.name.upper()}_H\n\n'
 
-        output += '#ifdef __cplusplus\nextern "C" {\n#endif\n\n'
+        output += '#ifdef __cplusplus\nextern "C" {\n#endif // __cplusplus\n\n'
 
         output += '#include "lumina_font.h"\n\n'
 
@@ -61,9 +62,10 @@ class LFCPublisher:
                 output += f'#define LUMINA_FONT_GLYPH_{glyph.code:X} {index}\n'
             output += '\n'
 
-        output += f'extern const lumina_font_t {options.name};'
+        output += f'extern const lumina_font_t {options.name};\n\n'
 
-        output += '\n\n#ifdef __cplusplus\n}\n#endif'
+        output += '#ifdef __cplusplus\n}\n#endif // __cplusplus\n\n'
+        output += f'#endif // {options.name.upper()}_H'
 
         return output
 
