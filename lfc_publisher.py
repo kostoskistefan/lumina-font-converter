@@ -15,13 +15,17 @@ class LFCPublisher:
 
     def publish(self, options, glyphs, indexing_mode, indices):
         """Function that generates the Lumina compatible font files"""
-        # create_output_directory()
+        output_directory = self.create_output_directory()
 
         header_file_content = self.generate_header_file(options, glyphs, indexing_mode)
         source_file_content = self.generate_source_file(options, glyphs, indexing_mode, indices)
 
-        print(header_file_content)
-        print(source_file_content)
+        with open(os.path.join(output_directory, f'{options.name}.h'), 'w') as header_file:
+            header_file.write(header_file_content)
+
+        with open(os.path.join(output_directory, f'{options.name}.c'), 'w') as source_file:
+            source_file.write(source_file_content)
+
 
     def indent(self, string):
         """Function that adds indentation to a given string"""
@@ -30,7 +34,7 @@ class LFCPublisher:
 
     def create_output_directory(self):
         """Function that creates the output directory"""
-        output_path = os.path.join(os.path.realpath(__file__), 'output')
+        output_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'output')
 
         # Create the output directory if it doesn't exist
         if not os.path.exists(output_path):
