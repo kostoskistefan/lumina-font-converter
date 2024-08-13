@@ -1,5 +1,7 @@
 """Module for storing and optimizing a glyph in a Lumina supported font"""
 
+import math
+
 class LFCGlyph:
     """Class representing a glyph in a Lumina supported font"""
 
@@ -23,17 +25,20 @@ class LFCGlyph:
 
 
     def adjust_width(self):
-        """Function that adjusts the glyph's width to a multiple of 8"""
-        # Calculate the amount of padding needed to make the width a multiple of 8
-        padded_column_amount = (((self.width - 1) // 8 + 1) * 8) - self.width
+        """Function that adjusts the glyph's width to a multiple of bpp"""
+        # Calculate the pixels per byte
+        pixels_per_byte = 8 // self.bpp
+
+        # Calculate the amount of padding needed to make the width a multiple of bpp
+        column_padding = math.ceil(self.width / pixels_per_byte) * pixels_per_byte - self.width
 
         # Add padding
         for row in range(self.height):
-            index = row * (self.width + padded_column_amount) + self.width
-            self.data[index:index] = [0] * padded_column_amount
+            index = row * (self.width + column_padding) + self.width
+            self.data[index:index] = [0] * column_padding
 
         # Update the glyph's data and width
-        self.width += padded_column_amount
+        self.width += column_padding
 
 
     def trim_non_qualifying_rows(self, percentage):
