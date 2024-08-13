@@ -48,24 +48,30 @@ class LFCPublisher:
 
     def generate_header_file(self, options, glyphs, indexing_mode):
         """Function that generates the header file content"""
-        output = '#pragma once\n\n'
-        output += self.generate_info(options)
+        output = self.generate_info(options)
+
+        output += '#pragma once\n\n'
+
+        output += '#ifdef __cplusplus\nextern "C" {\n#endif\n\n'
+
+        output += '#include "lumina_font.h"\n\n'
 
         if indexing_mode == IndexingMode.UNICODE:
             for (index, glyph) in enumerate(glyphs):
                 output += f'#define LUMINA_FONT_GLYPH_{glyph.code:X} {index}\n'
             output += '\n'
 
-        output += f'extern const lumina_font_t {options.name}_font;'
+        output += f'extern const lumina_font_t {options.name};'
+
+        output += '\n\n#ifdef __cplusplus\n}\n#endif'
 
         return output
 
 
     def generate_source_file(self, options, glyphs, indexing_mode, indices):
         """Function that generates the source file content"""
-        output = '#include "lumina_font.h"\n'
+        output = self.generate_info(options)
         output += f'#include "{options.name}.h"\n\n'
-        output += self.generate_info(options)
         output += self.generate_glyphs_bitmap(options.name, glyphs, options.bpp)
         output += self.generate_glyphs_metadata(options.name, glyphs)
         output += self.generate_glyphs_lookup_table(options.name, indices, glyphs)
@@ -78,11 +84,11 @@ class LFCPublisher:
         """Function that generates the font information"""
         command = textwrap.fill(
                 ' '.join(sys.argv),
-                width=110,
+                width=107,
                 initial_indent='',
                 subsequent_indent="//          ")
 
-        output = f'// {"-" * 120}\n'
+        output = f'// {"-" * 117}\n'
         output += f'// Font name: {options.name}\n'
         output += f'// Font height: {options.height}px\n'
         output += f'// Font bpp: {options.bpp}\n'
@@ -91,7 +97,7 @@ class LFCPublisher:
         output += '// https://github.com/kostoskistefan/lumina-font-converter\n'
         output += f'// Generated on: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n'
         output += f'// Command: {command}\n'
-        output += f'// {"-" * 120}\n\n'
+        output += f'// {"-" * 117}\n\n'
 
         return output
 
@@ -173,7 +179,7 @@ class LFCPublisher:
 
     def generate_font(self, options, glyphs, indexing_mode):
         """Function that generates the C extern font struct"""
-        output = f'const lumina_font_t {options.name}_font = {{\n'
+        output = f'const lumina_font_t {options.name} = {{\n'
         output += self.indent(f'.bpp = {options.bpp},\n')
         output += self.indent(f'.first_valid_index = {glyphs[0].code},\n')
         output += self.indent(f'.last_valid_index = {glyphs[-1].code},\n')
