@@ -4,7 +4,6 @@ import math
 
 class LFCGlyph:
     """Class representing a glyph in a Lumina supported font"""
-
     def __init__(self, bpp, code, width, height, advance, y_offset, bitmap_index, data):
         self.bpp = bpp
         self.data = data
@@ -25,8 +24,8 @@ class LFCGlyph:
         self._trim_trailing_zero_columns()
 
 
-    def adjust_width(self):
-        """Function that adjusts the glyph's width to a multiple of bpp"""
+    def adjust_bitmap_width(self):
+        """Function that adjusts the glyph's bitmap width to a multiple of bpp"""
         # Calculate the pixels per byte
         pixels_per_byte = 8 // self.bpp
 

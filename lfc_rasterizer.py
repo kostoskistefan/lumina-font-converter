@@ -70,8 +70,8 @@ class LFCRasterizer:
                 # Trim leading and trailing zero rows from the glyph data
                 glyph.trim_zero_axes()
 
-                # Adjust the width of the glyph to make it divisible by 8
-                glyph.adjust_width()
+                # Adjust the bitmap width of the glyph to a multiple of bpp
+                glyph.adjust_bitmap_width()
 
                 # Trim rows that contribute less than a certain
                 # percentage of the maximum value that a row can have
