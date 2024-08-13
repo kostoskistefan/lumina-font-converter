@@ -125,7 +125,7 @@ class LFCPublisher:
 
                 columns += 8
 
-                if columns >= glyph.width * bpp:
+                if columns >= glyph.bitmap_width * bpp:
                     columns = 0
                     output += '\n'
 
