@@ -51,6 +51,7 @@ class LFCPublisher:
         if indexing_mode == IndexingMode.UNICODE:
             for (index, glyph) in enumerate(glyphs):
                 output += f'#define LUMINA_FONT_GLYPH_{glyph.code:X} {index}\n'
+            output += '\n'
 
         output += f'extern const lumina_font_t {options.name}_font;'
 
@@ -64,7 +65,7 @@ class LFCPublisher:
         output += self.generate_info(options)
         output += self.generate_glyphs_bitmap(options.name, glyphs, options.bpp)
         output += self.generate_glyphs_metadata(options.name, glyphs)
-        output += self.generate_glyphs_lookup_table(options.name, indices)
+        output += self.generate_glyphs_lookup_table(options.name, indices, glyphs)
         output += self.generate_font(options, glyphs, indexing_mode)
 
         return output
@@ -147,19 +148,19 @@ class LFCPublisher:
             output += f'.advance = {glyph.advance:{max_advance_digits}}, '
             output += f'.y_offset = {glyph.y_offset:{max_y_offset_digits}}, '
             output += f'.bitmap_index = {glyph.bitmap_index:{max_bitmap_index_digits}} '
-            output += '},\n'
+            output += f'}}, // Code: {glyph.code}\n'
 
         output += '};\n\n'
 
         return output
 
 
-    def generate_glyphs_lookup_table(self, font_name, indices):
+    def generate_glyphs_lookup_table(self, font_name, indices, glyphs):
         """Function that generates the glyph lookup table"""
         output = f'static const uint8_t {font_name}_glyph_lut[] = {{\n'
 
         for index in indices:
-            output += self.indent(f'{index},\n')
+            output += self.indent(f'{index}, // Code: {glyphs[index].code}\n')
 
         output += '};\n\n'
 
