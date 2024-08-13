@@ -29,7 +29,7 @@ class LFCRasterizer:
 
         for character in options.characters:
             # Load the character from the font
-            face.load_char(character, freetype.FT_LOAD_BITMAP_METRICS_ONLY)
+            face.load_char(character, freetype.FT_LOAD_FLAGS['FT_LOAD_BITMAP_METRICS_ONLY'])
 
             # Update the max ascent
             max_ascent = max(max_ascent, face.glyph.bitmap_top)

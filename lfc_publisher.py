@@ -20,10 +20,13 @@ class LFCPublisher:
         header_file_content = self.generate_header_file(options, glyphs, indexing_mode)
         source_file_content = self.generate_source_file(options, glyphs, indexing_mode, indices)
 
-        with open(os.path.join(output_directory, f'{options.name}.h'), 'w') as header_file:
+        header_file_path = os.path.join(output_directory, f'{options.name}.h')
+        source_file_path = os.path.join(output_directory, f'{options.name}.c')
+
+        with open(header_file_path, 'w', encoding='utf-8') as header_file:
             header_file.write(header_file_content)
 
-        with open(os.path.join(output_directory, f'{options.name}.c'), 'w') as source_file:
+        with open(source_file_path, 'w', encoding='utf-8') as source_file:
             source_file.write(source_file_content)
 
 
@@ -100,7 +103,7 @@ class LFCPublisher:
         for (index, glyph) in enumerate(glyphs):
             output += (
                     self.indent('// ') +
-                    f'Code: {glyph.code}, '
+                    f'Code: {glyph.code:{"d" if glyph.code < 128 else "x"}}, '
                     f'Width: {glyph.width}, '
                     f'Height: {glyph.height}\n'
             )
@@ -148,7 +151,7 @@ class LFCPublisher:
             output += f'.advance = {glyph.advance:{max_advance_digits}}, '
             output += f'.y_offset = {glyph.y_offset:{max_y_offset_digits}}, '
             output += f'.bitmap_index = {glyph.bitmap_index:{max_bitmap_index_digits}} '
-            output += f'}}, // Code: {glyph.code}\n'
+            output += f'}}, // Code: {glyph.code:{"d" if glyph.code < 128 else "x"}}\n'
 
         output += '};\n\n'
 
@@ -160,7 +163,8 @@ class LFCPublisher:
         output = f'static const uint8_t {font_name}_glyph_lut[] = {{\n'
 
         for index in indices:
-            output += self.indent(f'{index}, // Code: {glyphs[index].code}\n')
+            output += self.indent(f'{index}, ')
+            output += f'// Code: {glyphs[index].code:{"d" if glyphs[index].code < 128 else "x"}}\n'
 
         output += '};\n\n'
 
