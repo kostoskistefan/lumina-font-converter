@@ -1,13 +1,17 @@
+"""Module for rasterizing font characters into Lumina supported glyphs"""
+
 import freetype
-from lfc_glyph import * 
+from lfc_glyph import LFCGlyph
 from lfc_constants import LFC_BITMAP_ROW_QUALIFICATION_THRESHOLD
 
 class LFCRasterizer:
+    """Class for rasterizing font characters into Lumina supported glyphs"""
     def __init__(self):
         self.glyphs = []
 
 
     def rasterize(self, options):
+        """Function that rasterizes the font characters into Lumina supported glyphs"""
         # Calculate the max ascent
         max_ascent = self.calculate_max_ascent(options)
 
@@ -16,6 +20,7 @@ class LFCRasterizer:
 
 
     def calculate_max_ascent(self, options):
+        """Function that calculates the maximum ascent of the font"""
         # Find the character with the highest bitmap_top (ascent)
         face = freetype.Face(options.font)
         face.set_char_size(options.height << 6)
@@ -27,13 +32,13 @@ class LFCRasterizer:
             face.load_char(character, freetype.FT_LOAD_BITMAP_METRICS_ONLY)
 
             # Update the max ascent
-            if face.glyph.bitmap_top > max_ascent:
-                max_ascent = face.glyph.bitmap_top
+            max_ascent = max(max_ascent, face.glyph.bitmap_top)
 
         return max_ascent
 
 
     def rasterize_font(self, max_ascent, options):
+        """Function that rasterizes the font into glyphs"""
         # Load the font face
         face = freetype.Face(options.font)
 
@@ -68,10 +73,12 @@ class LFCRasterizer:
                 # Adjust the width of the glyph to make it divisible by 8
                 glyph.adjust_width()
 
-                # Trim rows that contribute less than a certain percentage of the maximum value that a row can have
-                # Ex. if the max summed pixel values per row are 128, and a row only has 1 very dim pixel set 
-                # (for example: a brightness value of 5), and the percentage is set to 5%, the row will be removed. 
-                # This reduces the memory footprint of the generated font, for use in MCUs with limited memory
+                # Trim rows that contribute less than a certain
+                # percentage of the maximum value that a row can have
+                # Ex. if the max summed pixel values per row are 128, and a row only has 1 very dim
+                # pixel set (for example: a brightness value of 5), and the percentage is 5%, the
+                # row will be removed. This reduces the memory footprint of the generated font,
+                # especially for use in MCUs with limited memory
                 glyph.trim_non_qualifying_rows(LFC_BITMAP_ROW_QUALIFICATION_THRESHOLD)
 
             # Update the character data index for the next character

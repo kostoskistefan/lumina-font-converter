@@ -1,7 +1,9 @@
-from lfc_options import *
-from lfc_rasterizer import *
-from lfc_indexer import *
-from lfc_publisher import *
+"""Module for converting a font file to a Lumina supported C file format"""
+
+from lfc_options import LFCOptions
+from lfc_rasterizer import LFCRasterizer
+from lfc_indexer import LFCIndexer
+from lfc_publisher import LFCPublisher
 
 if __name__ == '__main__':
     options = LFCOptions()
@@ -10,7 +12,7 @@ if __name__ == '__main__':
     rasterizer.rasterize(options)
 
     indexer = LFCIndexer()
-    indexer.index(rasterizer.glyphs, options.bpp)
+    indexer.index(rasterizer.glyphs)
 
     publisher = LFCPublisher()
     publisher.publish(options, rasterizer.glyphs, indexer.indexing_mode, indexer.indices)

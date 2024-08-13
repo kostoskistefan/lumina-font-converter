@@ -1,4 +1,8 @@
+"""Module for storing and optimizing a glyph in a Lumina supported font"""
+
 class LFCGlyph:
+    """Class representing a glyph in a Lumina supported font"""
+
     def __init__(self, bpp, code, width, height, advance, y_offset, bitmap_index, data):
         self.bpp = bpp
         self.data = data
@@ -9,8 +13,9 @@ class LFCGlyph:
         self.y_offset = y_offset
         self.bitmap_index = bitmap_index
 
-    
+
     def trim_zero_axes(self):
+        """Function that trims unnecessary leading/trailing zero rows/columns from the glyph data"""
         self._trim_leading_zero_rows()
         self._trim_trailing_zero_rows()
         self._trim_leading_zero_columns()
@@ -18,6 +23,7 @@ class LFCGlyph:
 
 
     def adjust_width(self):
+        """Function that adjusts the glyph's width to a multiple of 8"""
         # Calculate the amount of padding needed to make the width a multiple of 8
         padded_column_amount = (((self.width - 1) // 8 + 1) * 8) - self.width
 
@@ -31,13 +37,14 @@ class LFCGlyph:
 
 
     def trim_non_qualifying_rows(self, percentage):
+        """Function that trims the glyph's rows based on the given percentage"""
         # Calculate the max value a row can have based on the bpp
         max_row_value = sum([2 ** (self.bpp - 1)] * self.width)
 
         for row in range(self.height):
             # Calculate the sum of the values of the current row
             row_sum = sum(self.data[row * self.width : row * self.width + self.width])
-            
+
             # If the sum is less than a given percentage of the max value, remove the row
             if row_sum / max_row_value < percentage:
                 self.height -= 1
@@ -115,13 +122,13 @@ class LFCGlyph:
         output = ''
 
         # Print the glyph information
-        output += 'bpp: {}\n'.format(self.bpp)
-        output += 'code: {}\n'.format(self.code)
-        output += 'width: {}\n'.format(self.width)
-        output += 'height: {}\n'.format(self.height)
-        output += 'advance: {}\n'.format(self.advance)
-        output += 'y_offset: {}\n'.format(self.y_offset)
-        output += 'bitmap_index: {}\n'.format(self.bitmap_index)
+        output += f'bpp: {self.bpp}\n'
+        output += f'code: {self.code}\n'
+        output += f'width: {self.width}\n'
+        output += f'height: {self.height}\n'
+        output += f'advance: {self.advance}\n'
+        output += f'y_offset: {self.y_offset}\n'
+        output += f'bitmap_index: {self.bitmap_index}\n'
 
         output += '\nraw data:\n'
 

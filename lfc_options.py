@@ -1,17 +1,45 @@
+"""Module for parsing and storing command line arguments"""
+
 import argparse
 import os.path
 
 class LFCOptions:
+    """Class for parsing and storing command line arguments"""
     def __init__(self):
         self.parse()
 
 
     def parse(self):
-        parser = argparse.ArgumentParser(description='Convert a TTF font file to C code used by the Lumina library')
-        parser.add_argument('--bpp', type=int, choices=[1, 2, 4, 8], required=True, help='Defines how many bits per pixel to use for the generated font')
-        parser.add_argument('--name', type=str, required=True, help='The name of the generated lumina compatible font')
-        parser.add_argument('--height', type=int, required=True, help='The height of the generated font')
-        parser.add_argument('--font', type=str, required=True, nargs=2, metavar=('font_file', 'characters'), help='The path to the font file to convert and a list of comma separated list of numbers or ranges of characters to convert. E.g. 65,66-70,75')
+        """Function that parses the command line arguments"""
+        parser = argparse.ArgumentParser('Convert a font file to a Lumina compatible format')
+
+        parser.add_argument(
+                '--bpp',
+                type=int,
+                choices=[1, 2, 4, 8],
+                required=True,
+                help='Defines how many bits per pixel to use for the generated font')
+
+        parser.add_argument(
+                '--name',
+                type=str,
+                required=True,
+                help='The name of the generated lumina compatible font')
+
+        parser.add_argument(
+                '--height',
+                type=int,
+                required=True,
+                help='The height of the generated font')
+
+        parser.add_argument(
+                '--font',
+                type=str,
+                required=True,
+                nargs=2,
+                metavar=('font_file', 'characters'),
+                help='The path to the font file to convert and a list of comma separated list '
+                     'of numbers or ranges of characters to convert. E.g. 65,66-70,75')
 
         arguments = parser.parse_args()
 
@@ -20,17 +48,19 @@ class LFCOptions:
         self.height = arguments.height
 
         if not os.path.isfile(arguments.font[0]):
-            raise Exception('The specified font file does not exist')
+            raise FileNotFoundError('The specified font file does not exist')
 
         self.font = arguments.font[0]
         self.characters = self.expand_characters(arguments.font[1])
 
 
     def parse_int(self, value: str):
+        """Converts a string into an integer with a base 10 or 16 prefix"""
         return int(value, 16 if value.startswith('0') else 10)
 
 
     def expand_characters(self, characters: str):
+        """Convert a comma separated list of numbers or ranges of numbers into an integer list"""
         characters = ''.join(characters.split())
 
         tokens = characters.split(',')
@@ -45,7 +75,9 @@ class LFCOptions:
                     start, end = token.split('-')
                     character_array += list(range(self.parse_int(start), self.parse_int(end) + 1))
                 case _:
-                    raise Exception('Invalid character range. Use a comma separated list of numbers or ranges of numbers')
+                    raise ValueError(
+                            'Invalid character range. '
+                            'Use a comma separated list of numbers or ranges of numbers')
 
         return character_array
 
@@ -53,14 +85,10 @@ class LFCOptions:
     def __str__(self):
         output = ''
 
-        output += 'name: {}\n'.format(self.name)
-        output += 'bpp: {}\n'.format(self.bpp)
-        output += 'height: {}\n'.format(self.height)
-        output += 'Fonts: \n'
-
-        for font in self.fonts:
-            output += '\tfont: {}\n'.format(font['font'])
-            output += '\tcharacters: {}\n\n'.format(', '.join([str(x) for x in font['characters']]))
+        output += f'name: {self.name}\n'
+        output += f'bpp: {self.bpp}\n'
+        output += f'height: {self.height}\n'
+        output += f'font: {self.font}\n'
+        output += f'characters: {', '.join([str(x) for x in self.characters])}\n\n'
 
         return output
-
