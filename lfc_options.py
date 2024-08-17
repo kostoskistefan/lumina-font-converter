@@ -2,6 +2,7 @@
 
 import argparse
 import os.path
+import string
 
 class LFCOptions:
     """Class for parsing and storing command line arguments"""
@@ -36,10 +37,14 @@ class LFCOptions:
                 '--font',
                 type=str,
                 required=True,
-                nargs=2,
-                metavar=('font_file', 'characters'),
-                help='The path to the font file to convert and a list of comma separated list '
-                     'of numbers or ranges of characters to convert. E.g. 65,66-70,75')
+                help='The path to the font file to convert')
+
+        parser.add_argument(
+                '--characters',
+                type=str,
+                required=True,
+                help='A comma separated list of numbers or ranges of characters to convert. '
+                     'E.g. 65,66-70,75')
 
         arguments = parser.parse_args()
 
@@ -47,16 +52,21 @@ class LFCOptions:
         self.name = arguments.name
         self.height = arguments.height
 
-        if not os.path.isfile(arguments.font[0]):
-            raise FileNotFoundError('The specified font file does not exist')
+        if not os.path.isfile(arguments.font):
+            raise FileNotFoundError('LFC::ERROR: The specified font file does not exist')
 
-        self.font = arguments.font[0]
-        self.characters = self.expand_characters(arguments.font[1])
+        self.font = arguments.font
+        self.characters = self.expand_characters(arguments.characters)
 
 
     def parse_int(self, value: str):
         """Converts a string into an integer with a base 10 or 16 prefix"""
         return int(value, 16 if value.startswith('0') else 10)
+
+    
+    def character_is_valid(self, character: str):
+        """Checks if a character is valid"""
+        return character.isnumeric() or all(c in string.hexdigits for c in character)
 
 
     def expand_characters(self, characters: str):
@@ -70,13 +80,23 @@ class LFCOptions:
         for token in tokens:
             match token.count('-'):
                 case 0:
+                    if not self.character_is_valid(token):
+                        raise ValueError(f'LFC::ERROR: Invalid character: {token}. Use a number or a hex value')
+
                     character_array.append(self.parse_int(token))
                 case 1:
                     start, end = token.split('-')
+
+                    if not self.character_is_valid(start):
+                        raise ValueError(f'LFC::ERROR: Invalid range start: {start}. Use a number or a hex value')
+
+                    if not self.character_is_valid(end):
+                        raise ValueError(f'LFC::ERROR: Invalid range end: {end}. Use a number or a hex value')
+
                     character_array += list(range(self.parse_int(start), self.parse_int(end) + 1))
                 case _:
                     raise ValueError(
-                            'Invalid character range. '
+                            'LFC::ERROR: Invalid character range. '
                             'Use a comma separated list of numbers or ranges of numbers')
 
         return character_array
