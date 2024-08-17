@@ -63,7 +63,7 @@ class LFCOptions:
         """Converts a string into an integer with a base 10 or 16 prefix"""
         return int(value, 16 if value.startswith('0') else 10)
 
-    
+
     def character_is_valid(self, character: str):
         """Checks if a character is valid"""
         return character.isnumeric() or all(c in string.hexdigits for c in character)
@@ -81,17 +81,20 @@ class LFCOptions:
             match token.count('-'):
                 case 0:
                     if not self.character_is_valid(token):
-                        raise ValueError(f'LFC::ERROR: Invalid character: {token}. Use a number or a hex value')
+                        raise ValueError(f'LFC::ERROR: Invalid character: {token}.'
+                                         ' Use a number or a hex value')
 
                     character_array.append(self.parse_int(token))
                 case 1:
                     start, end = token.split('-')
 
                     if not self.character_is_valid(start):
-                        raise ValueError(f'LFC::ERROR: Invalid range start: {start}. Use a number or a hex value')
+                        raise ValueError(f'LFC::ERROR: Invalid range start: {start}.'
+                                         ' Use a number or a hex value')
 
                     if not self.character_is_valid(end):
-                        raise ValueError(f'LFC::ERROR: Invalid range end: {end}. Use a number or a hex value')
+                        raise ValueError(f'LFC::ERROR: Invalid range end: {end}.'
+                                         ' Use a number or a hex value')
 
                     character_array += list(range(self.parse_int(start), self.parse_int(end) + 1))
                 case _:
