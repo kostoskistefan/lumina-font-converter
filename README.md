@@ -1,34 +1,35 @@
 # Lumina Font Converter
 
-The Lumina Font Converter (LFC) is a Python script that converts a font file into C header and source files compatible with the Lumina library.
+A Python script that uses FreeType2 to convert font files into a format compatible with the Lumina library.
+
+The Lumina Font Converter (LFC) allows you to load a font from a file and convert it into C header and source files. These files can then be used with the Lumina library which is designed with embedded systems in mind but is also suitable for larger systems and computers.
 
 ## Command Line Options
-| Option       | Description                                                                                                                                                        | Accepted Values                                       |
-|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
-| `bpp`    | Bits per pixel. Defines the color depth of the font glyphs.                                                                                                          | `1`, `2`, `4`, `8`                                    |
-| `name`     | The name to be used for the output files and the definition of the font variable in the C header file. This will be the prefix of the generated `.h` and `.c` files. | Any string                                            |
-| `height`   | The pixel height of the font. This defines the size of the font glyphs.                                                                                              | Any positive integer                                  |
-| `font`     | - **font_file**: The path to the font file. This file will be used to generate the font glyphs. <br> - **characters**: The range of characters you wish to include in the generated font. This can be specified as a continuous range (e.g., `48-57` for digits) or as a comma-separated list. LFC supports both ASCII and Unicode characters, which is particularly useful for converting icons, such as those from Font Awesome. | - **Supported font types**: All fonts supported by the FreeType2 library (`.ttf`, `.otf`, Type 1, CID-keyed Type 1, CFF, PCF, BDF, PFR, Windows FNT) <br> - **Characters**: positive integers in decimal or hex representation |
+
+| Option       | Description |
+| ------------ | ----------- |
+| `help`       | Show a help message. |
+| `bpp`        | Bits per pixel. Defines how many bits are going to be used for rendering each pixel in the glyph. Accepted values: `1`, `2`, `4`, `8` |
+| `name`       | The name to be used for the output file names and the definition of the font variable in the C header file. |
+| `height`     | The height of the converted font in pixels. This defines the size of the font glyphs. |
+| `font`       | The path to the font file. This file will be used to converte the font glyphs. |
+| `characters` | The range of characters you wish to include in the font. This can be specified as a continuous range (e.g., `48-57` for digits) or as a comma-separated list. LFC supports both ASCII and Unicode characters, which is particularly useful for converting icons, such as those from Font Awesome. |
 
 ## Dependencies
 
-- Python 3.x
-- FreeType2 (Python bindings for FreeType2)
+- python 3.x
+- [freetype-py](https://github.com/rougier/freetype-py)
   
-You can install the dependencies using pip:
-
-```bash
-pip install freetype-py
-```
-
 ## Usage Examples
 
 > [!NOTE]
-> This section only covers how to use the Lumina Font Converter to convert fonts. For information on how to use the generated fonts in a project with the Lumina library, please refer to the Lumina library documentation.
+> This section only covers how to use the Lumina Font Converter to convert fonts. For information on how to use the converted fonts in a project with the Lumina library, please refer to the Lumina library documentation.
 
 ### ASCII
 
 Let's convert the Montserrat Medium font into C header and source files.
+
+Configuration:
 - Bits per pixel: 2
 - Font name: montserrat_medium_14
 - Font height: 14
@@ -44,6 +45,8 @@ You should now have two files in the `output` directory: `montserrat_medium_14.h
 ### Unicode
 
 Let's convert a few icons from the Font Awesome font into C header and source files.
+
+Configuration:
 - Bits per pixel: 4
 - Font name: font_awesome_solid_18
 - Font height: 18
