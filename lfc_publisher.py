@@ -177,9 +177,19 @@ class LFCPublisher:
         """Function that generates the glyph lookup table"""
         output = f'static const uint8_t {font_name}_glyph_lut[] = {{\n'
 
+        max_code_digits = max(len(str(glyph.code)) for glyph in glyphs)
+
         for index in indices:
-            output += self.indent(f'{index}, ')
-            output += f'// Code: {glyphs[index].code:{"d" if glyphs[index].code < 128 else "x"}}\n'
+            output += self.indent(f'{index:{max_code_digits}d}, ')
+
+            if index == -1:
+                output += '// Unused\n'
+
+            elif glyphs[index].code < 128:
+                output += f'// Code: {glyphs[index].code:d}\n'
+
+            else:
+                output += f'// Code: {glyphs[index].code:x}\n'
 
         output += '};\n\n'
 
