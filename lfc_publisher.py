@@ -153,11 +153,21 @@ class LFCPublisher:
         """Function that generates the glyph metadata"""
         output = f'static const lumina_font_glyph_metadata_t {font_name}_glyph_metadata[] = {{\n'
 
+        max_width = max(glyph.width for glyph in glyphs)
+
         max_width_digits = max(len(str(glyph.width)) for glyph in glyphs)
         max_height_digits = max(len(str(glyph.height)) for glyph in glyphs)
-        max_advance_digits = max(len(str(glyph.advance)) for glyph in glyphs)
+        max_advance_digits = max(max(len(str(glyph.advance)) for glyph in glyphs), len(str(max_width)))
         max_y_offset_digits = max(len(str(glyph.y_offset)) for glyph in glyphs)
         max_bitmap_index_digits = max(len(str(glyph.bitmap_index)) for glyph in glyphs)
+
+        output += self.indent('{ ')
+        output += f'.width = {0:{max_width_digits}}, '
+        output += f'.height = {0:{max_height_digits}}, '
+        output += f'.advance = {max_width:{max_advance_digits}}, '
+        output += f'.y_offset = {0:{max_y_offset_digits}}, '
+        output += f'.bitmap_index = {0:{max_bitmap_index_digits}} '
+        output += f'}}, // Reserved by Lumina\n'
 
         for glyph in glyphs:
             output += self.indent('{ ')
@@ -175,21 +185,21 @@ class LFCPublisher:
 
     def generate_glyphs_lookup_table(self, font_name, indices, glyphs):
         """Function that generates the glyph lookup table"""
-        output = f'static const uint8_t {font_name}_glyph_lut[] = {{\n'
+        output = f'static const lumina_font_glyph_lut_entry_t {font_name}_glyph_lut[] = {{\n'
 
         max_code_digits = max(len(str(glyph.code)) for glyph in glyphs)
 
         for index in indices:
             output += self.indent(f'{index:{max_code_digits}d}, ')
 
-            if index == -1:
+            if index == 0:
                 output += '// Unused\n'
 
-            elif glyphs[index].code < 128:
-                output += f'// Code: {glyphs[index].code:d}\n'
+            elif glyphs[index - 1].code < 128:
+                output += f'// Code: {glyphs[index - 1].code:d}\n'
 
             else:
-                output += f'// Code: {glyphs[index].code:x}\n'
+                output += f'// Code: {glyphs[index - 1].code:x}\n'
 
         output += '};\n\n'
 

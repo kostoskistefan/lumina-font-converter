@@ -26,10 +26,10 @@ class LFCIndexer:
         match self.indexing_mode:
             case IndexingMode.ASCII:
                 # Create an index list with a length of the value of the highest glyph code
-                self.indices = [-1] * (max(glyph.code for glyph in glyphs) - glyphs[0].code + 1)
+                self.indices = [0] * (max(glyph.code for glyph in glyphs) - glyphs[0].code + 1)
 
                 for (index, glyph) in enumerate(glyphs):
-                    self.indices[glyph.code - glyphs[0].code] = index
+                    self.indices[glyph.code - glyphs[0].code] = index + 1
 
             case IndexingMode.UNICODE:
                 # Create an index list with a length of the number of glyphs
