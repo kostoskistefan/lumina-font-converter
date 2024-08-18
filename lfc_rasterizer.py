@@ -3,7 +3,6 @@
 import math
 import freetype
 from lfc_glyph import LFCGlyph
-from lfc_constants import LFC_BITMAP_ROW_QUALIFICATION_THRESHOLD
 
 class LFCRasterizer:
     """Class for rasterizing font characters into Lumina supported glyphs"""
@@ -75,14 +74,6 @@ class LFCRasterizer:
 
                 # Adjust the bitmap width of the glyph to a multiple of bpp
                 glyph.adjust_bitmap_width()
-
-                # Trim rows that contribute less than a certain
-                # percentage of the maximum value that a row can have
-                # Ex. if the max summed pixel values per row are 128, and a row only has 1 very dim
-                # pixel set (for example: a brightness value of 5), and the percentage is 5%, the
-                # row will be removed. This reduces the memory footprint of the generated font,
-                # especially for use in MCUs with limited memory
-                glyph.trim_non_qualifying_rows(LFC_BITMAP_ROW_QUALIFICATION_THRESHOLD)
 
             # Update the character data index for the next character
             character_data_index += math.ceil(glyph.width / pixels_per_byte) * glyph.height

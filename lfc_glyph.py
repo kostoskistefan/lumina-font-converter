@@ -42,24 +42,6 @@ class LFCGlyph:
         self.width += column_padding
 
 
-    def trim_non_qualifying_rows(self, percentage):
-        """Function that trims the glyph's rows based on the given percentage"""
-        # Calculate the max value a row can have based on the bpp
-        max_row_value = sum([2 ** (self.bpp - 1)] * self.width)
-
-        for row in range(self.height):
-            # Calculate the stride of the current row
-            row_stride = row * self.width 
-
-            # Calculate the sum of the values of the current row
-            row_sum = sum(self.data[row_stride : row_stride + self.width])
-
-            # If the sum is less than a given percentage of the max value, remove the row
-            if row_sum / max_row_value < percentage:
-                self.height -= 1
-                del self.data[row_stride : row_stride + self.width]
-
-
     def _trim_leading_zero_columns(self):
         zero_column_count = 0
 
