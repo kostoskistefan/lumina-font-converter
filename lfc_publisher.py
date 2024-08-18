@@ -2,6 +2,7 @@
 
 import os
 import sys
+import math
 import datetime
 import textwrap
 from lfc_constants import LFC_VERSION, LFC_PUBLISHER_INDENTATION
@@ -115,6 +116,8 @@ class LFCPublisher:
         """Function that generates the glyph bitmap data"""
         output = f'static const uint8_t {font_name}_glyph_bitmap[] = {{\n'
 
+        pixels_per_byte = 8 // bpp
+
         for (index, glyph) in enumerate(glyphs):
             output += (
                     self.indent('// ') +
@@ -132,9 +135,9 @@ class LFCPublisher:
             for i in range(0, len(glyph_bitstream), 8):
                 output += f'0x{int(glyph_bitstream[i:i+8], 2):0>02x}, '
 
-                columns += 8
+                columns += pixels_per_byte
 
-                if columns >= glyph.bitmap_width * bpp:
+                if columns >= glyph.width:
                     columns = 0
                     output += '\n'
 

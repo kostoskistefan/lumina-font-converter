@@ -1,5 +1,6 @@
 """Module for rasterizing font characters into Lumina supported glyphs"""
 
+import math
 import freetype
 from lfc_glyph import LFCGlyph
 from lfc_constants import LFC_BITMAP_ROW_QUALIFICATION_THRESHOLD
@@ -49,6 +50,8 @@ class LFCRasterizer:
 
         glyph_bpp_map_divisor = 1 << (8 - options.bpp)
 
+        pixels_per_byte = 8 // options.bpp
+
         # Iterate over all requested characters
         for character in options.characters:
             # Load the character from the font
@@ -82,7 +85,7 @@ class LFCRasterizer:
                 glyph.trim_non_qualifying_rows(LFC_BITMAP_ROW_QUALIFICATION_THRESHOLD)
 
             # Update the character data index for the next character
-            character_data_index += len(glyph.data)
+            character_data_index += math.ceil(glyph.width / pixels_per_byte) * glyph.height
 
             # Add the glyph to the list
             self.glyphs.append(glyph)
