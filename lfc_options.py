@@ -61,12 +61,14 @@ class LFCOptions:
 
     def parse_int(self, value: str):
         """Converts a string into an integer with a base 10 or 16 prefix"""
-        return int(value, 16 if value.startswith('0') else 10)
+        return int(value, 16 if value.startswith('0x') else 10)
 
 
     def character_is_valid(self, character: str):
         """Checks if a character is valid"""
-        return character.isnumeric() or all(c in string.hexdigits for c in character)
+        return \
+            character.isnumeric() or \
+            (character.startswith('0x') and all(c in string.hexdigits for c in character[2:]))
 
 
     def expand_characters(self, characters: str):

@@ -67,13 +67,14 @@ class LFCPublisher:
 
         if indexing_mode == IndexingMode.UNICODE:
             for (index, glyph) in enumerate(glyphs):
-                output += f'#define LUMINA_FONT_GLYPH_{glyph.code:X} {index}\n'
+                output += f'#define LUMINA_FONT_GLYPH_{glyph.code:X} "\\x{index + 1:x}"\n'
             output += '\n'
 
         output += f'extern const lumina_font_t {options.name};\n\n'
 
         output += '#ifdef __cplusplus\n}\n#endif // __cplusplus\n\n'
         output += f'#endif // {options.name.upper()}_H'
+        output += '\n'
 
         return output
 
@@ -82,10 +83,11 @@ class LFCPublisher:
         """Function that generates the source file content"""
         output = self.generate_info(options)
         output += f'#include "{options.name}.h"\n\n'
-        output += self.generate_glyphs_bitmap(options.name, glyphs, options.bpp)
-        output += self.generate_glyphs_metadata(options.name, glyphs)
-        output += self.generate_glyphs_lookup_table(options.name, indices, glyphs)
+        output += self.generate_glyphs_bitmap(options.name, glyphs, options.bpp, indexing_mode)
+        output += self.generate_glyphs_metadata(options.name, glyphs, indexing_mode)
+        output += self.generate_glyphs_lookup_table(options.name, indexing_mode, indices, glyphs)
         output += self.generate_font(options, glyphs, indexing_mode)
+        output += '\n'
 
         return output
 
@@ -112,19 +114,22 @@ class LFCPublisher:
         return output
 
 
-    def generate_glyphs_bitmap(self, font_name, glyphs, bpp):
+    def generate_glyphs_bitmap(self, font_name, glyphs, bpp, indexing_mode):
         """Function that generates the glyph bitmap data"""
         output = f'static const uint8_t {font_name}_glyph_bitmap[] = {{\n'
 
         pixels_per_byte = 8 // bpp
 
         for (index, glyph) in enumerate(glyphs):
-            output += (
-                    self.indent('// ') +
-                    f'Code: {glyph.code:{"d" if glyph.code < 128 else "x"}}, '
-                    f'Width: {glyph.width}, '
-                    f'Height: {glyph.height}\n'
-            )
+            output += self.indent('// ') 
+
+            if indexing_mode == IndexingMode.ASCII:
+                output += f'Code: {glyph.code:d}, '
+            else:
+                output += f'Code: 0x{glyph.code:x}, '
+
+            output += f'Width: {glyph.width}, '
+            output += f'Height: {glyph.height}\n'
 
             glyph_bitstream = ''.join([f'{chunk:0{bpp}b}' for chunk in glyph.data])
 
@@ -152,7 +157,7 @@ class LFCPublisher:
         return output
 
 
-    def generate_glyphs_metadata(self, font_name, glyphs):
+    def generate_glyphs_metadata(self, font_name, glyphs, indexing_mode):
         """Function that generates the glyph metadata"""
         output = f'static const lumina_font_glyph_metadata_t {font_name}_glyph_metadata[] = {{\n'
 
@@ -179,30 +184,39 @@ class LFCPublisher:
             output += f'.advance = {glyph.advance:{max_advance_digits}}, '
             output += f'.y_offset = {glyph.y_offset:{max_y_offset_digits}}, '
             output += f'.bitmap_index = {glyph.bitmap_index:{max_bitmap_index_digits}} '
-            output += f'}}, // Code: {glyph.code:{"d" if glyph.code < 128 else "x"}}\n'
+
+            if indexing_mode == IndexingMode.ASCII:
+                output += f'}}, // Code: {glyph.code:d}\n'
+            else:
+                output += f'}}, // Code: 0x{glyph.code:x}\n'
 
         output += '};\n\n'
 
         return output
 
 
-    def generate_glyphs_lookup_table(self, font_name, indices, glyphs):
+    def generate_glyphs_lookup_table(self, font_name, indexing_mode, indices, glyphs):
         """Function that generates the glyph lookup table"""
         output = f'static const lumina_font_glyph_lut_entry_t {font_name}_glyph_lut[] = {{\n'
 
-        max_code_digits = max(len(str(glyph.code)) for glyph in glyphs)
+        max_code_digits = len(str(len(glyphs)))
 
-        for index in indices:
-            output += self.indent(f'{index:{max_code_digits}d}, ')
+        if indexing_mode == IndexingMode.UNICODE:
+            output += self.indent(f'{0:{max_code_digits}}, // Reserved by Lumina\n')
 
-            if index == 0:
-                output += '// Unused\n'
+            for index in indices:
+                output += self.indent(f'{index:{max_code_digits}d}, ')
+                output += f'// Code: 0x{glyphs[index - 1].code:x}\n'
 
-            elif glyphs[index - 1].code < 128:
-                output += f'// Code: {glyphs[index - 1].code:d}\n'
+        else:
+            for index in indices:
+                output += self.indent(f'{index:{max_code_digits}d}, ')
 
-            else:
-                output += f'// Code: {glyphs[index - 1].code:x}\n'
+                if index == 0:
+                    output += '// Unused\n'
+
+                else:
+                    output += f'// Code: {glyphs[index - 1].code:d}\n'
 
         output += '};\n\n'
 

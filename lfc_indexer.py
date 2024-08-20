@@ -33,4 +33,4 @@ class LFCIndexer:
 
             case IndexingMode.UNICODE:
                 # Create an index list with a length of the number of glyphs
-                self.indices = list(range(len(glyphs)))
+                self.indices = list(range(1, len(glyphs) + 1))
