@@ -9,14 +9,14 @@ class LFCPublisher:
         pass
 
 
-    def publish(self, glyphs: list[LFCGlyph], options: LFCOptions) -> None:
+    def publish(self, glyphs: list[LFCGlyph], descent: int, options: LFCOptions) -> None:
         output = ''
 
         output += self.publish_header(options)
         output += self.publish_glyph_bitmaps(glyphs)
         output += self.publish_glyph_data(glyphs)
         output += self.publish_character_maps(glyphs)
-        output += self.publish_font(glyphs, options)
+        output += self.publish_font(glyphs, descent, options)
 
         with open(f'{options.output_path}/{options.name}.c', 'w') as f:
             f.write(output)
@@ -135,16 +135,18 @@ class LFCPublisher:
         return output
 
 
-    def publish_font(self, glyphs: list[LFCGlyph], options: LFCOptions) -> str:
+    def publish_font(self, glyphs: list[LFCGlyph], descent: int, options: LFCOptions) -> str:
         character_maps_count = len(self.split_non_consecutive_characters(glyphs))
 
         output = f'const lumina_font_t {options.name} = {{\n'
+        output += f'    .height = {max(glyphs, key=lambda x: x.height).height},\n'
+        output += f'    .descent = {descent},\n'
         output += f'    .bits_per_pixel = {options.bpp},\n'
         output += f'    .bitmap = glyph_bitmap,\n'
         output += f'    .glyph_data = glyph_data,\n'
         output += f'    .character_maps = character_maps,\n'
         output += f'    .character_maps_count = {character_maps_count},\n'
-        output += '};'
+        output += '};\n'
 
         return output
 

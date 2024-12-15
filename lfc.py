@@ -10,4 +10,4 @@ if __name__ == '__main__':
     rasterizer.run(options)
 
     publisher = LFCPublisher()
-    publisher.publish(rasterizer.glyphs, options)
+    publisher.publish(rasterizer.glyphs, rasterizer.descent, options)
